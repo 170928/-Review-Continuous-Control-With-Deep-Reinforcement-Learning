@@ -40,8 +40,10 @@ environment ![image](https://user-images.githubusercontent.com/40893452/44575915
 agent의 행동(behavior)는 정책 (policy) 에 의해서 결정됩니다.  
 정책은 state를 action들의 확률 분포 (probability distribution) 으로 매핑합니다.  
 > ![image](https://user-images.githubusercontent.com/40893452/44576281-1d801b00-a7c9-11e8-9d28-c4fc9a34d784.png)  
+
 환경 E 도 stochastic 합니다.  
 그러므로, 이 모든 환경을 "Markov decision process"로 표현합니다.  
+
 > ![image](https://user-images.githubusercontent.com/40893452/44576430-7c459480-a7c9-11e8-8dc1-02a66698d89a.png)  
 Stochastic environment 이기 때문에 state도 distribution으로 표현됩니다.  
 뿐만 아니라, state transition dynamics 도 확률로써 표기됩니다.  
