@@ -64,14 +64,22 @@ Q[state, action] = r + max(Q[new_state])
 이 식은 내가 원하는대로 움직이는 것을 가정한 식이기 때문에 non-deterministic 상황에서는 Q[state] 값을 왜곡하므로
 이 부분이 반영되는 비율을 적게 하고, 현재의 값을 많이 반영하면, Q-table 값을 어느정도 보정할 수 있다.  
 Reward는 dicounted future reward 의 합계로써 정의됩니다.  
+
 > ![image](https://user-images.githubusercontent.com/40893452/44576846-92a02000-a7ca-11e8-83c7-8e1f04c9ae46.png)   
+
 Return (== Reward)는 선택되는 action에 따라 변하므로, action이 선택되고 행해지는 것이 stochastic 환경이기 때문에, Reward 또한
 stochastic 하다.  
+
 강화학습의 목적은 "state distribution" 에서 최대의 기대 수익 (expected return) 을 얻을 수 있는 정책 (policy)를 찾는 것입니다.  
+
 > ![image](https://user-images.githubusercontent.com/40893452/44576977-e1e65080-a7ca-11e8-87d3-bc5004e8fd44.png)   
+
 이 논문에서는 discounted state visitation distribution 을 다음과 같이 표기합니다.  
+
 > ![image](https://user-images.githubusercontent.com/40893452/44577033-fde9f200-a7ca-11e8-8697-cb4a9b94718a.png)   
+
 강화학습에서 사용하는 "action-value function"은 action a(t) 를 state s(t)에서 수행할 때 예상되는 수익을 의미하며 다음과 같이 표기할 수 있습니다.  
+
 > ![image](https://user-images.githubusercontent.com/40893452/44577107-325dae00-a7cb-11e8-852d-9e39253ec7a0.png)  
 
 
