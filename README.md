@@ -82,6 +82,17 @@ stochastic 하다.
 
 > ![image](https://user-images.githubusercontent.com/40893452/44577107-325dae00-a7cb-11e8-852d-9e39253ec7a0.png)  
 
+강화학습을 사용할 때, "Bellman equation"으로 알려진 reculsive relationship을 이용합니다.  
+
+> ![image](https://user-images.githubusercontent.com/40893452/44577336-cf204b80-a7cb-11e8-8e06-0686730311f7.png)  
+
+만약 target policy 가 deterministic 하다면, bellman equation 내의 expectation을 없앨 수 있습니다.  
+
+> ![image](https://user-images.githubusercontent.com/40893452/44577397-f7a84580-a7cb-11e8-9b54-9003dd35ed9d.png)  
+
+이 식에 따르면, action-value function 이 target policy와 무관하게, 환경에 대해서만 이존하게 되므로 "off-policy" 접근으로 학습 할 수 있게 됩니다.  
+
+
 
 
 
