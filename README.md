@@ -91,6 +91,21 @@ stochastic 하다.
 > ![image](https://user-images.githubusercontent.com/40893452/44577397-f7a84580-a7cb-11e8-9b54-9003dd35ed9d.png)  
 
 이 식에 따르면, action-value function 이 target policy와 무관하게, 환경에 대해서만 이존하게 되므로 "off-policy" 접근으로 학습 할 수 있게 됩니다.  
+> policy가 determinstic하기 때문에, policy에따라 변화될 수 있는 Expectation이 빠진 것을 알 수 있습니다. Deterministic policy를 가정하기 전의 수식에서는 a(t+1)을 선택하는 순간의 policy로 Q에 대한 Expection을 원래 구해야하기 때문에 off-policy가 아니지만, Determinsitic policy를 가정한다면 update 할 당시의 policy로 at+1를 구할 수 있기 때문에 off-policy가 됩니다. 
+> https://reinforcement-learning-kr.github.io/2018/06/26/3_ddpg/ 참고  
+
+네트워크의 parameter를 다음과 같이 표기합니다.  
+> ![image](https://user-images.githubusercontent.com/40893452/44577728-cc722600-a7cc-11e8-870d-e6689a9f1fe1.png)  
+
+뉴럴 네트워크의 학습 과정에서 목적합수로 사용 될 loss function은 다음과 같이 정의됩니다.  
+> ![image](https://user-images.githubusercontent.com/40893452/44577792-eb70b800-a7cc-11e8-91c0-c7e9837e40e7.png)  
+
+이때, y(t)는 다음과 같습니다.  
+> ![image](https://user-images.githubusercontent.com/40893452/44577832-04796900-a7cd-11e8-9316-42f6d78ba5b3.png)
+
+
+
+
 
 
 
