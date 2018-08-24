@@ -103,6 +103,7 @@ stochastic 하다.
 이때, y(t)는 다음과 같습니다.  
 > ![image](https://user-images.githubusercontent.com/40893452/44577832-04796900-a7cd-11e8-9316-42f6d78ba5b3.png)
 
+## Algorithm
 
 
 
