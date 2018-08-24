@@ -31,3 +31,23 @@ neural network의 function approximation 특징을 활용해서 고차원의 con
 (4) Batch normalization 기법을 활용합니다.  
 
 ## Background
+일반적인 Reinforement learning 환경을 고려합니다.  
+environment ![image](https://user-images.githubusercontent.com/40893452/44575915-36d49780-a7c8-11e8-8c2d-505020fb3f8d.png) 와 상호작용하며, 각각의 timestep t 마다 agent는 observation ![image](https://user-images.githubusercontent.com/40893452/44575962-5a97dd80-a7c8-11e8-8f96-f11f79edefb9.png) 를 얻습니다.  
+그에따라, action ![image](https://user-images.githubusercontent.com/40893452/44575996-70a59e00-a7c8-11e8-92fb-c47d402c6371.png) 과 reward를 받습니다.  
+이 논문에서 고려하고자 하는 환경에서, action은 ![image](https://user-images.githubusercontent.com/40893452/44576050-903cc680-a7c8-11e8-9870-56d0beb84918.png) 가 됩니다.  
+일반적으로 환경은 partially observed 되기 때문에 observation과 action 쌍의 모든 history를 모아서 하나의 state로 보아야 하지만, 이 논문에서는 fully observed라고 가정합니다. 그 의미는 아래와 같습니다.  
+![image](https://user-images.githubusercontent.com/40893452/44576204-e7db3200-a7c8-11e8-9275-da9e6cb28f73.png)  
+agent의 행동(behavior)는 정책 (policy) 에 의해서 결정됩니다.  
+정책은 state를 action들의 확률 분포 (probability distribution) 으로 매핑합니다.  
+> ![image](https://user-images.githubusercontent.com/40893452/44576281-1d801b00-a7c9-11e8-9d28-c4fc9a34d784.png)  
+환경 E 도 stochastic 합니다.  
+그러므로, 이 모든 환경을 "Markov decision process"로 표현합니다.  
+> ![image](https://user-images.githubusercontent.com/40893452/44576430-7c459480-a7c9-11e8-8dc1-02a66698d89a.png)  
+
+
+
+
+
+
+
+
