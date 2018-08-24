@@ -43,6 +43,24 @@ agent의 행동(behavior)는 정책 (policy) 에 의해서 결정됩니다.
 환경 E 도 stochastic 합니다.  
 그러므로, 이 모든 환경을 "Markov decision process"로 표현합니다.  
 > ![image](https://user-images.githubusercontent.com/40893452/44576430-7c459480-a7c9-11e8-8dc1-02a66698d89a.png)  
+Stochastic environment 이기 때문에 state도 distribution으로 표현됩니다.  
+뿐만 아니라, state transition dynamics 도 확률로써 표기됩니다.  
+> Stochastic environment 에 대한 간단한 이해는 다음 주소를 참조하였습니다.  
+> http://www.modulabs.co.kr/RL4RWS/18834
+> Deterministic하다는 것은 어떤 함수가 무조건 parameter에 따라 결과가 결정된다는 의미이다.
+즉, 같은 인자에 같은 결과가 나온다는 것. 앞서서 우리가 가정했던 Frozen Lake의 환경은
+입력한 action 그대로 다음 state가 결정되는 상황이었다. 
+그에 반해 non-deterministic한 환경에서는 입력과 관계없이 랜덤한 결과가 나온다.
+gym에서 is_slippery 값을 True로 설정하게 되면 호수에서 움직일 때 미끄러져서 action과 무관하게
+다음 state가 결정된다. 그렇기 때문에 이전 시간까지 우리가 Q-테이블을 채우는 방식을 그대로 가져오면
+성공률이 현저하게 떨어지게 된다. Q-테이블은 내가 그대로 움직일 것을 가정하고 최대 reward 값을 리턴하는데
+실제로 나는 그 방향대로 움직이지 않을 것이기 때문이다.
+그렇다면 이런 상황에서 Q-테이블은 쓸모가 없어지는 것인가?
+가끔씩 action대로 움직이는 경우도 발생하기 때문에 Q-table을 완전히 무시하는 것도 비효율적일 수 있다. 
+그래서 제안하는 것이 Q-테이블을 보되, 업데이트할 때 다음 state의 reward를 적게 반영하는 것이다.
+Q[state, action] = r + max(Q[new_state])
+이 식은 내가 원하는대로 움직이는 것을 가정한 식이기 때문에 non-deterministic 상황에서는 Q[state] 값을 왜곡하므로
+이 부분이 반영되는 비율을 적게 하고, 현재의 값을 많이 반영하면, Q-table 값을 어느정도 보정할 수 있다.  
 
 
 
