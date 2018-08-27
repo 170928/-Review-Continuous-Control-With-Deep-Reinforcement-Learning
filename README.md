@@ -104,6 +104,67 @@ stochastic 하다.
 > ![image](https://user-images.githubusercontent.com/40893452/44577832-04796900-a7cd-11e8-9316-42f6d78ba5b3.png)
 
 ## Algorithm
+Q-learning을 continous space에 적용하는 것은 불가능 합니다. continuous space에서 greedy policy를 찾는 방법은 매 time step 마다 a(t) 의 optimization이 수행되어야 함을 의미합니다.  
+이 과정은 너무 느리기 때문에 실제로 적용하기에 무리가 있습니다.  
+그러므로, DPG 알고리즘 비나의 actor-critic approach가 이 논문에서 제시됩니다.  
+
+DPG 알고리즘은 parameterized actor function ![image](https://user-images.githubusercontent.com/40893452/44640718-43dacc00-a9fe-11e8-987e-18139f428540.png) 를 가지고 있습니다.  
+![image](https://user-images.githubusercontent.com/40893452/44640718-43dacc00-a9fe-11e8-987e-18139f428540.png) 는 "current policy"를 의미하며, state를 action으로 매핑합니다.  
+critic function ![image](https://user-images.githubusercontent.com/40893452/44640751-74226a80-a9fe-11e8-8f99-e9aeab5ca35f.png) 은 Q-learning에서 처럼 "Bellman equation"을 통해서 학습됩니다.  
+actor 는 "start distribution ![image](https://user-images.githubusercontent.com/40893452/44640778-a9c75380-a9fe-11e8-973e-3f0275246560.png) 로 부터 기대되는 return에 chain rule을 적용해서 업데이트 됩니다. 즉, 아래와 같은 식으로 표현할 수 잇습니다.  
+![image](https://user-images.githubusercontent.com/40893452/44640807-d3807a80-a9fe-11e8-88d8-0fb80534fcb8.png)  
+> Silver et al.(2014) 에서 이 방법이 "policy gradient"라는 것을 증명했습니다.  
+
+## Detail Algorithm
+강화학습을 위해서 뉴럴 네트워크를 사용할 때 대부분의 최적화 알고리즘은 샘플들이 독립적이고 identical distribution을 따른다고 가정합니다.  
+그러나, 실제로 샘프들이 연속된 탐색과정에서 발생하게 된다면 이 2가지 가정은 유지될 수 없습니다.  
+즉, 샘플들 간에 "Correlation"이 존재하게 됩니다. 
+추가적으로, 학습과정에서 "online" 방법 보다는 minibatch 를 활용한 "offline" 방법이 효과적입니다.  
+
+"Replay buffer"은 exploration policy를 따라서 저장된 유한한 사이즈의 transition 저장소 입니다.  
+replay buffer가 가득차게 되면 오래된 샘플들부터 버리고 새로운 데이터를 축적합니다.  
+매 time step 마다, actor와 critic은 buffer로 부터 uniformly random하게 샘플링되는 미니배치를 통해서 업데이트 됩니다.  
+"Soft" target update 방법을 통해서 직접적으로 weight 전체를 copy하는 방법이 아닌 조금씩 업데이트 하는 형태의 방식을 채택 하였습니다.  
+
+(1) actor와 critic network의 복사본을 만듭니다. 
+![image](https://user-images.githubusercontent.com/40893452/44642507-79d07e00-aa07-11e8-83a8-fe23b778cf7b.png)   
+![image](https://user-images.githubusercontent.com/40893452/44642524-8b198a80-aa07-11e8-93dc-f4d8f1dc1e99.png)  
+이들은 target value를 계산하기 위해서 사용됩니다.  
+이 네트워크들의 가중치들은 leanred network를 천천히 따라가면서 업데이트 되도록 하는 "soft copy" 형태의 업데이트가 이루어집니다.  
+이 방법은 학습과정의 안정성을 향상시킵니다.  
+
+(2) ![image](https://user-images.githubusercontent.com/40893452/44642638-12ff9480-aa08-11e8-8c76-eb5ee89f6cae.png) 는 학습과정에서 발산의 문제 없이 "Critic"을 학습하기 위해서 안정적인 y(i) 를 가지기 위해 필요합니다. 즉, 2개의 네트워크가 모두 필요합니다.  
+
+(3) low dimensional feature vector로부터 학습을 할 때, observation 대상들은 다른 environment에서 다른 범위 의 값을 가질 것입니다. 이는 다른 범위의 값을 가지는 환경들을 건너서 적절한 hyper-parameters를 찾는 것을 어렵게 합니다.  
+이 문제를 해결하기 위해서 이 논문에서는 "batch-normalization"을 사용합니다. 그 결과, 환경과 요소에 관계없이 유사한 범위에 놓인 값을 통해서 학습이 이루어지게 됩니다.  
+이 방법은 미니배치에서 샘플들 모두에서 각 dimension에 대해서 normalize를 수행합니다.  
+그리고, 가깍의 레이어가 받는 입력값의 "covariance shift"를 최소화 시켜줍니다.  
+이 논문에서는 ![image](https://user-images.githubusercontent.com/40893452/44643362-3841d200-aa0b-11e8-9113-b77e24bfacfd.png)
+에 batch_normalization이 적용됩니다.  
+
+(4) continuous action space 에서의 exploration 방법은 아래오 가타이 actor policy에 노이즈를 추가하는 방법으로 이루어지며, 이때, 노이즈는 환경에 따라 적절하게 변경됩니다.  
+![image](https://user-images.githubusercontent.com/40893452/44643447-8ce54d00-aa0b-11e8-9392-29f3be00379c.png)  
+
+![image](https://user-images.githubusercontent.com/40893452/44644154-09792b00-aa0e-11e8-9549-84ab0b0211f1.png)
+
+
+## Result
+
+
+![image](https://user-images.githubusercontent.com/40893452/44644167-19910a80-aa0e-11e8-9251-f9a2599183d1.png)
+
+모든 작업에서 우리는 낮은 차원의 상태 설명 (예 : 관절 각 및 위치)과 환경의 고차원 렌더링을 모두 사용하여 실험을 실행했습니다.
+
+ DQN (Mnih et al., 2013; 2015)에서와 같이 고 차원 환경에서 문제를 거의 완벽하게 관찰 할 수 있도록 조치 반복을 사용했습니다.
+
+에이전트의 각 타임 스텝마다 시뮬레이션의 3 단계 타임 스텝을 수행하고 매번 에이전트의 동작과 렌더링을 반복합니다.
+
+따라서 에이전트에게보고 된 관찰은 에이전트가 프레임 간의 차이를 사용하여 속도를 추론 할 수있게하는 9 개의 기능 맵 (3 가지 렌더링 각각의 RGB)을 포함합니다.
+
+ 프레임은 64x64 픽셀로 다운 샘플링되었고 8 비트 RGB 값은 [0,1]로 스케일 된 부동 소수점으로 변환되었습니다. 네트워크 구조 및 하이퍼 파라미터에 대한 자세한 내용은 보충 정보를 참조하십시오
+
+
+ 
 
 
 
