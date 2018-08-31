@@ -166,10 +166,69 @@ replay buffer가 가득차게 되면 오래된 샘플들부터 버리고 새로�
 
  
 
-
-
-
-
+> 공부하던 도중 facebook에서 서기호님이 작성해주신 요약 내용입니다. 간단하게 이해할 수 있어서 첨부하였습니다.
+> DDPG = 
+- Actor-Critic, 
+- Model-Free, 
+- Off-Policy 
+- Deterministic 
+- Policy Gradient
+이 논문에서 5개 단어만 알면 된다.
+x = observation
+s = state
+a = action
+Fully observable -> x=s
+pi, mu = policy
+deterministic policy: a = mu(s)
+결정이 되어 있다. s를 넣으면 a가 나온다
+stochastic policy: pi(a given s)
+확률적으로 나타내면 stochastic
+*deterministic는 끝났음
+markov decision process
+- initial state distribution p(s_1)
+- Transition Dynamics p(s_t+1 given s_t, a_t)
+모델을 다 알고 있으면 mdp를 만들수 있다
+- r(s,a) = reward function
+*model-free는 끝났음
+discounted future reward (return)
+return는 state, action의 함수이다. 즉, dynamics와 policy에 영향을 받는다. 
+따라서 (stochastic policy의 경우) return는 stochastic 하다.
+R_t = r(s_0, a_0) + gamma * r(s_1, a_1) + gamma^2 * r(s_2, a_2)
+s_i는 e라는 distribution로 따른다. a_i는 pi라는 distribution 따른다.
+R은 Expectation으로 표시한다.
+J = Expectation [R_1]
+평균 취하는것 -> 배치 돌리는 느낌
+이 return을 maximize 하느 policy를 찾는것이 강화학습의 목적!! 
+s와 a는 random variable
+Action-Value Function
+s_t에서 pi라는 policy를 따라해서 얻은 a_t라는 action를 취했을때의 expected return
+Q_pi (s_t, a_t) = E[R_t ㅣ s_t, a_t]
+Bellman Equation -> return은 recursive하게 구할수 있다
+Q_pi (s_t, a_t) = E[r(s_t,a_t) + gamma * E[Q_pi (s_t+1, a_t+1)]
+Q^mu (s_t, a_t) = Expectation[ r(s_t, a_t) + gamma * Q^u ( s_t+1, mu(s_t+1)]
+Q-learning
+mu(s) = argmax_a Q(s,a) 
+deterministic policy
+Q^mu (s_t, a_t) = Expectation[ r(s_t, a_t) + gamma * Q^u ( s_t+1, mu(s_t+1)] <— sarsa 그리고 on-policy
+Q-function을 function approximator로
+s -> network -> Q-value 1, Q-value 2, Q-value 3
+DQN은 (s,a)가 discrete한 경우에만 가능
+이걸 continuous한 환경에서도 강화학습 할수 있게 만들어 보자
+Deep Deterministic Policy Gradient
+policy gradient: a= mu(s)를 하나의 네트워크 (theta_mu)로 보고, gradient descent로 optimal policy를 구하자
+gradient_theta^mu = E [ gradient_theta^mu Q(s,a given theta^ Q) ㅣ s=s_t, a=mu(s_t | mu) ]
+Q-function을 maximize하는 theta_mu를 찾아보자
+Actor-Critic
+gradient_theta^mu = E [ gradient_theta^mu Q(s,a given theta^ Q) ㅣ s=s_t, a=mu(s_t | mu) ]
+Q(s,a given theta^ Q) ㅣ s=s_t, a=mu(s_t | mu) = L
+E [ gradient_theta^mu Q(s,a given theta^ Q) ㅣ s=s_t, a=mu(s_t ) gradient_theta^mu(s | theta^mu) | s=s_t]
+theta_mu ~ dL/d theta_mu = dQ / da x da / d theta_mu
+dQ / da = critic
+da / d theta_mu = actor
+actor와 critic을 deep learning을 했다는게 이 논문의 포인트!!!!!
+experience reply를 썼고
+target network를 썼다. 딥러닝의 타겟 값을 다시 써서 했다.
+>
 
 
 
