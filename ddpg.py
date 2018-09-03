@@ -1,7 +1,7 @@
 # [Reference Code]
 # https://github.com/pemami4911/deep-rl/blob/master/ddpg/ddpg.py
 # https://github.com/slowbull/DDPG
-
+# https://github.com/liampetti/DDPG
 
 import tensorflow as tf
 import numpy as np
@@ -10,89 +10,224 @@ from gym import wrappers
 import tflearn
 import argparse
 import pprint as pp
+from Actor import actor
+from Critic import critic
 
 from replay_buffer import ReplayBuffer
 
+# Maximum episodes run
+MAX_EPISODES = 100000
+# Max episode length
+MAX_EP_STEPS = 1000
+# Episodes with noise
+NOISE_MAX_EP = 200
+# Size of replay buffer
+BUFFER_SIZE = 100000
+# Size of batch
+MINIBATCH_SIZE = 100
 
+
+# ====================================================
+# Noise parameters - Ornstein Uhlenbeck
+DELTA = 0.5 # The rate of change (time)
+SIGMA = 0.5 # Volatility of the stochastic processes
+OU_A = 3. # The rate of mean reversion
+OU_MU = 0. # The long run average interest rate
+# ====================================================
+
+
+# Reward parameters
+REWARD_FACTOR = 0.1 # Total episode reward factor
 LEARNING_RATE = 0.00025
-BATCH_SIZE = 64
+# Discount factor
+GAMMA = 0.99
+# Soft target update param
+TAU = 0.001
 
-class Actor(object):
-    def __init__(self, sess, state_dim, action_dim, action_bound, tau, action_type):
-        self.sess = sess
-        self.state_dim = state_dim
-        self.action_dim = action_dim
-        self.action_bound = action_bound
-        self.tau = tau
-        self.action_type = action_type
+# ====================================================
+# Render gym env during training
+RENDER_ENV = False
+# Use Gym Monitor
+GYM_MONITOR_EN = True
+# Gym environment
+ENV_NAME = 'CartPole-v0' # Discrete: Reward factor = 0.1
+#ENV_NAME = 'CartPole-v1' # Discrete: Reward factor = 0.1
+#ENV_NAME = 'Pendulum-v0' # Continuous: Reward factor = 0.01
+# Directory for storing gym results
+MONITOR_DIR = './results/' + ENV_NAME
+# Directory for storing tensorboard summary results
+SUMMARY_DIR = './results/tf_ddpg'
+
+# ===========================
+#   Tensorflow Summary Ops
+# ===========================
+def build_summaries():
+    episode_reward = tf.Variable(0.)
+    tf.summary.scalar("Reward", episode_reward)
+    episode_ave_max_q = tf.Variable(0.)
+    tf.summary.scalar("Qmax Value", episode_ave_max_q)
+
+    summary_vars = [episode_reward, episode_ave_max_q]
+    summary_ops = tf.summary.merge_all()
+
+    return summary_ops, summary_vars
+
+# ===========================
+#   Agent Training
+# ===========================
+def train(sess, env, actor, critic, noise, reward, discrete):
+    # Set up summary writer
+    summary_writer = tf.summary.FileWriter("ddpg_summary")
+
+    sess.run(tf.global_variables_initializer())
+
+    # Initialize target network weights
+    actor.update_target_network()
+    critic.update_target_network()
+
+    # Initialize replay memory
+    replay_buffer = ReplayBuffer(BUFFER_SIZE, RANDOM_SEED)
+
+    # Initialize noise
+    ou_level = 0.
+
+    for i in range(MAX_EPISODES):
+        s = env.reset()
+
+        ep_reward = 0
+        ep_ave_max_q = 0
+
+        # Clear episode buffer
+        episode_buffer = np.empty((0,5), float)
+
+        for j in range(MAX_EP_STEPS):
+            if RENDER_ENV:
+                env.render()
+
+            a = actor.predict(np.reshape(s, (1, actor.s_dim)))
+
+            # Add exploration noise
+            if i < NOISE_MAX_EP:
+                ou_level = noise.ornstein_uhlenbeck_level(ou_level)
+                a = a + ou_level
+
+            # Set action for discrete and continuous action spaces
+            if discrete:
+                action = np.argmax(a)
+            else:
+                action = a[0]
+
+            s2, r, terminal, info = env.step(action)
+
+            # Choose reward type
+            ep_reward += r
+
+            episode_buffer = np.append(episode_buffer, [[s, a, r, terminal, s2]], axis=0)
+
+            # Keep adding experience to the memory until
+            # there are at least minibatch size samples
+            if replay_buffer.size() > MINIBATCH_SIZE:
+                s_batch, a_batch, r_batch, t_batch, s2_batch = \
+                    replay_buffer.sample_batch(MINIBATCH_SIZE)
+
+                # Calculate targets
+                target_q = critic.predict_target(s2_batch, actor.predict_target(s2_batch))
+
+                y_i = []
+                for k in range(MINIBATCH_SIZE):
+                    if t_batch[k]:
+                        y_i.append(r_batch[k])
+                    else:
+                        y_i.append(r_batch[k] + GAMMA * target_q[k])
+
+                # Update the critic given the targets
+                predicted_q_value, _ = critic.train(s_batch, a_batch, np.reshape(y_i, (MINIBATCH_SIZE, 1)))
+
+                ep_ave_max_q += np.amax(predicted_q_value)
+
+                # Update the actor policy using the sampled gradient
+                a_outs = actor.predict(s_batch)
+                grads = critic.action_gradients(s_batch, a_outs)
+                actor.train(s_batch, grads[0])
+
+                # Update target networks
+                actor.update_target_network()
+                critic.update_target_network()
+
+            # Set previous state for next step
+            s = s2
+
+            if terminal:
+                # Reward system for episode
+                #episode_buffer = reward.total(episode_buffer, ep_reward)
+                episode_buffer = reward.discount(episode_buffer)
+
+                # Add episode to replay buffer
+                for step in episode_buffer:
+                    replay_buffer.add(np.reshape(step[0], (actor.s_dim,)), np.reshape(step[1], (actor.a_dim,)), step[2], \
+                                  step[3], np.reshape(step[4], (actor.s_dim,)))
+
+                summary = tf.Summary()
+                summary.value.add(tag='Perf/Reward', simple_value=float(ep_reward))
+                summary.value.add(tag='Perf/Qmax', simple_value=float(ep_ave_max_q / float(j)))
+                summary_writer.add_summary(summary, i)
+
+                summary_writer.flush()
+
+                print('| Reward: %.2i' % int(ep_reward), " | Episode", i, \
+                '| Qmax: %.4f' % (ep_ave_max_q / float(j)))
+
+                break
 
 
-        # Parameters "soft update" is needed.
-        # We have 2 actor networks.
+def main(_):
+    with tf.Session() as sess:
+        env = gym.make(ENV_NAME)
+        np.random.seed(RANDOM_SEED)
+        tf.set_random_seed(RANDOM_SEED)
+        env.seed(RANDOM_SEED)
 
-        # mainActorNetwork
-        self.inputs, self.phase, self.outputs, self.scaled_outputs = self._build_actor_network()
-        self.main_parameters = tf.trainable_variables()
+        print(env.observation_space)
+        print(env.action_space)
 
-        # targetActorNetwork
-        self.target_inputs, self.target_phase, self.target_outputs, self.target_scaled_outputs = self._build_actor_network()
-        self.target_parameters = tf.trainable_variables()[len(self.main_parameters):]
+        state_dim = env.observation_space.shape[0]
 
-        # parameter "soft" update
-        self.update_target_net_params =  [self.target_parameters[i].assign(tf.multiply(self.main_parameters[i], self.tau) +
-                                              tf.multiply(self.target_parameters[i], 1. - self.tau))
-             for i in range(len(self.target_parameters))]
+        try:
+            action_dim = env.action_space.shape[0]
+            action_bound = env.action_space.high
+            # Ensure action bound is symmetric
+            assert (env.action_space.high == -env.action_space.low)
+            discrete = False
+            print('Continuous Action Space')
+        except AttributeError:
+            action_dim = env.action_space.n
+            action_bound = 1
+            discrete = True
+            print('Discrete Action Space')
 
-        # tf.gradients(y, x, grad_ys) = grad_ys * diff(y, x)
-        # tf.gradients()는 백프롭 할 때 미분된 값을 보여주고, apply_gradients()는 .minimize(loss)와 같은 역할을 하지만 직접 그래디언트 값을 넣어서 theta를 바꿀 수 있습니다.
-        # tf.gradients() 를 사용해 미분을 수행해 기울기(gradient)를 구합니다. 더 정확히는 X(들)에 대한 Y(들)의 편미분값을 구해 줍니
+        actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
+                             ACTOR_LEARNING_RATE, TAU)
 
-        if self.action_type == 'Continuous':
-            self.action_gradients = tf.placeholder(tf.float32, [None, self.action_dim])
-        else:
-            self.action_gradients = tf.placeholder(tf.float32, [None, 1])
+        critic = CriticNetwork(sess, state_dim, action_dim,
+                               CRITIC_LEARNING_RATE, TAU, actor.get_num_trainable_vars())
 
-        self.actor_gradients = tf.gradients(self.outputs, self.main_parameters, -self.action_gradients)
+        noise = Noise(DELTA, SIGMA, OU_A, OU_MU)
+        reward = Reward(REWARD_FACTOR, GAMMA)
 
-        # Optimization Op
-        # apply_gradients 에 대한 내용 참조
-        # http://dukwon.tistory.com/31
-        # actor_gradients 는 self.main_parameters에 대한 gradients가 들어있다.
-        # main_parameters에 대한 gradients를 이용해서
-        # main_parameters를 update 해야하므로,
-        # optimizer의 apply_gradients를 사용한다.
-        # tf.gradients 와 appliy_gradients 를 사용하는 이유는 collect the gradients and apply later 를 하고자 할 때입니다.
-        # 이렇게 나누는 방법의 쉬운 예로는 loss 를 구하고 해당 loss 값에 의한 gradients를 특정 범위로 clip 후에 학습하고자 할때 사용되며
-        # https://medium.com/@dubovikov.kirill/actually-we-can-work-with-gradients-directly-in-tensorflow-via-optimizers-compute-gradients-and-fc2b5612665a
-        # 위의 reference에서 이해할 수 잇습니다.
+        if GYM_MONITOR_EN:
+            if not RENDER_ENV:
+                env.monitor.start(MONITOR_DIR, video_callable=False, force=True)
+            else:
+                env.monitor.start(MONITOR_DIR, force=True)
 
-        self.optimize = tf.train.AdamOptimizer(LEARNING_RATE)
-        self.grads_and_vars = list(zip(self.actor_gradients, self.main_parameters))
-        self.updateGradients = self.optimize.apply_gradients(self.grads_and_vars)
+        try:
+            train(sess, env, actor, critic, noise, reward, discrete)
+        except KeyboardInterrupt:
+            pass
 
-        self.num_trainable_vars = len(self.main_parameters) + len(self.target_parameters)
-
-
-    def _build_actor_network(self):
-        if self.action_type == 'Continuous':
-            inputs = tf.placeholder(tf.float32, shape=(None,) + self.state_dim)
-            phase = tf.placeholder(tf.bool)
-            net = fully_connected(inputs, 400, activation_fn=tf.nn.relu)
-            net = fully_connected(net, 300, activation_fn=tf.nn.relu)
-            # Final layer weight are initialized to Uniform[-3e-3, 3e-3]
-            outputs = fully_connected(net, self.action_dim, activation_fn=tf.tanh,
-                                      weights_initializer=tf.random_uniform_initializer(-3e-3, 3e-3))
-            scaled_outputs = tf.multiply(outputs, self.action_bound)  # Scale output to [-action_bound, action_bound]
-        else:
-            inputs = tf.placeholder(tf.float32, shape=(None,) + self.state_dim)
-            phase = tf.placeholder(tf.bool)
-            net = fully_connected(inputs, 400, activation_fn=tf.nn.relu)
-            net = fully_connected(net, 300, activation_fn=tf.nn.relu)
-            # Final layer weight are initialized to Uniform[-3e-3, 3e-3]
-            outputs = fully_connected(net, 1, weights_initializer=tf.random_uniform_initializer(-3e-3, 3e-3))
-            scaled_outputs = discretize(outputs, self.action_dim)
-
-        return inputs, phase, outputs, scaled_outputs
+        if GYM_MONITOR_EN:
+            env.monitor.close()
 
 
-    
+if __name__ == '__main__':
+    tf.app.run()
