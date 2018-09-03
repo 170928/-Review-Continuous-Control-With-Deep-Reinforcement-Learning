@@ -10,10 +10,12 @@ from gym import wrappers
 import tflearn
 import argparse
 import pprint as pp
-from Actor import actor
-from Critic import critic
+from Actor import Actor as actorNet
+from Critic import Critic as criticNet
 
-from replay_buffer import ReplayBuffer
+from replay_memory import ReplayBuffer
+from Noise import Noise
+from reward import Reward
 
 # Maximum episodes run
 MAX_EPISODES = 100000
@@ -81,11 +83,9 @@ def train(sess, env, actor, critic, noise, reward, discrete):
 
     sess.run(tf.global_variables_initializer())
 
-    # Initialize target network weights
     actor.update_target_network()
     critic.update_target_network()
 
-    # Initialize replay memory
     replay_buffer = ReplayBuffer(BUFFER_SIZE, RANDOM_SEED)
 
     # Initialize noise
@@ -205,11 +205,9 @@ def main(_):
             discrete = True
             print('Discrete Action Space')
 
-        actor = ActorNetwork(sess, state_dim, action_dim, action_bound,
-                             ACTOR_LEARNING_RATE, TAU)
+        actor = actorNet(sess, state_dim, action_dim, action_bound, TAU)
 
-        critic = CriticNetwork(sess, state_dim, action_dim,
-                               CRITIC_LEARNING_RATE, TAU, actor.get_num_trainable_vars())
+        critic = criticNet(sess, state_dim, action_dim, TAU, actor.get_num_trainable_vars())
 
         noise = Noise(DELTA, SIGMA, OU_A, OU_MU)
         reward = Reward(REWARD_FACTOR, GAMMA)
