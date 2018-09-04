@@ -2,19 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0e95d8ba-f76e-4eaf-9a08-88235a2975bb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535968696.shin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535968814.shin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535968992.shin" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535969849.shin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Actor.py" beforeDir="false" afterPath="$PROJECT_DIR$/Actor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Critic.py" beforeDir="false" afterPath="$PROJECT_DIR$/Critic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ddpg.py" beforeDir="false" afterPath="$PROJECT_DIR$/ddpg.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535968202.shin" beforeDir="false" afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1535968202.shin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/save/pend/checkpoint" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/save/pend/model.data-00000-of-00001" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/save/pend/model.index" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/save/pend/model.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1536034304.shin" beforeDir="false" afterPath="$PROJECT_DIR$/ddpg_summary/events.out.tfevents.1536034304.shin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/save/pend/model.data-00000-of-00001" beforeDir="false" afterPath="$PROJECT_DIR$/save/pend/model.data-00000-of-00001" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/save/pend/model.index" beforeDir="false" afterPath="$PROJECT_DIR$/save/pend/model.index" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/save/pend/model.meta" beforeDir="false" afterPath="$PROJECT_DIR$/save/pend/model.meta" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -66,7 +58,7 @@
         <entry file="file://$PROJECT_DIR$/ddpg.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1245">
-              <caret line="207" column="38" lean-forward="true" selection-start-line="207" selection-start-column="38" selection-end-line="207" selection-end-column="38" />
+              <caret line="207" column="38" selection-start-line="207" selection-start-column="38" selection-end-line="207" selection-end-column="38" />
               <folding>
                 <element signature="e#156#179#0" expanded="true" />
               </folding>
@@ -374,7 +366,7 @@
     <entry file="file://$PROJECT_DIR$/ddpg.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1245">
-          <caret line="207" column="38" lean-forward="true" selection-start-line="207" selection-start-column="38" selection-end-line="207" selection-end-column="38" />
+          <caret line="207" column="38" selection-start-line="207" selection-start-column="38" selection-end-line="207" selection-end-column="38" />
           <folding>
             <element signature="e#156#179#0" expanded="true" />
           </folding>
