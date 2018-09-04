@@ -238,6 +238,7 @@ target network를 썼다. 딥러닝의 타겟 값을 다시 써서 했다.
 
 ![ddpg_training](https://user-images.githubusercontent.com/40893452/45012288-68175800-b051-11e8-8ee0-ebe2cb133828.gif)
 
+![image](https://user-images.githubusercontent.com/40893452/45014354-399d7b00-b059-11e8-97e9-27d5bd87e098.png)
 
 
 
