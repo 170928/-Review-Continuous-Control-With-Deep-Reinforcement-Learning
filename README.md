@@ -236,8 +236,7 @@ experience reply를 썼고
 target network를 썼다. 딥러닝의 타겟 값을 다시 써서 했다.  
 >
 
-
-
+![ddpg_training](https://user-images.githubusercontent.com/40893452/45012288-68175800-b051-11e8-8ee0-ebe2cb133828.gif)
 
 
 
