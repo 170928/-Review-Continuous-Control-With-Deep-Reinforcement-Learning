@@ -14,7 +14,7 @@ import pprint as pp
 from replay_buffer import ReplayBuffer
 
 
-LEARNING_RATE = 0.00025
+LEARNING_RATE = 0.002
 BATCH_SIZE = 100
 hidden1 = 400
 hidden2 = 300
@@ -57,11 +57,10 @@ class Critic(object):
 
         # Q(s,a) action-value function을 대체하는 네트워크 이므로,
         # input으로 state와 action이 들어온다.
-
         inputs = tflearn.input_data(shape=[None, self.state_dim])
         action = tflearn.input_data(shape=[None, self.action_dim])
 
-        w1 = weight_var([self.state_dim, hidden1], 'weight/layer1/critic')
+        self.w1 = weight_var([self.state_dim, hidden1], 'weight/layer1/critic')
         b1 = bias_var([hidden1], 'weight/layer1/critic')
 
         w2 = weight_var([hidden1, hidden2], 'weight/layer2/critic')
@@ -72,7 +71,7 @@ class Critic(object):
 
         w2_action = weight_var([self.action_dim, hidden2], 'weight/layer2/action_critic')
 
-        h1 = tf.nn.relu(tf.matmul(inputs, w1) + b1)
+        h1 = tf.nn.relu(tf.matmul(inputs, self.w1) + b1)
         h2 = tf.nn.relu(tf.matmul(h1, w2) + tf.matmul(action, w2_action) + b2)
         out = tf.matmul(h2, w3) + b3
 

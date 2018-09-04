@@ -49,7 +49,7 @@ class Actor(object):
         # Critic network가 전달해주는 action-value function의 gradient값이 들어올 ph 를 만듭니다.
         self.action_gradients = tf.placeholder(tf.float32, [None, self.action_dim])
 
-        self.actor_gradients = tf.gradients(self.outputs, self.main_parameters, -self.action_gradients)
+        self.actor_gradients = tf.gradients(self.scaled_outputs, self.main_parameters, -self.action_gradients)
 
         # Optimization Op
         # apply_gradients 에 대한 내용 참조

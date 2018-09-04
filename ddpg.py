@@ -9,10 +9,6 @@ import tensorflow as tf
 import os
 import numpy as np
 import gym
-from gym import wrappers
-import tflearn
-import argparse
-import pprint as pp
 from Actor import Actor as actorNet
 from Critic import Critic as criticNet
 
@@ -23,7 +19,7 @@ from reward import Reward
 # Maximum episodes run
 MAX_EPISODES = 100000
 # Max episode length
-MAX_EP_STEPS = 1000
+MAX_EP_STEPS = 50000
 # Episodes with noise
 NOISE_MAX_EP = 200
 # Size of replay buffer
@@ -38,7 +34,7 @@ RANDOM_SEED = 777
 # ====================================================
 # Noise parameters - Ornstein Uhlenbeck
 DELTA = 0.5 # The rate of change (time)
-SIGMA = 0.5 # Volatility of the stochastic processes
+SIGMA = 0.3 # Volatility of the stochastic processes
 OU_A = 3. # The rate of mean reversion
 OU_MU = 0. # The long run average interest rate
 # ====================================================
@@ -109,7 +105,10 @@ def train(sess, env, actor, critic, noise, reward, discrete, saver, checkpoint_p
 
         for j in range(MAX_EP_STEPS):
 
+            # print(critic.w1.eval()[0,0])
+
             env.render()
+
 
             # a 는 actor의 current policy를 기반으로 예측한 q_value tensor [None x action_dim]
             a = actor.predict(np.reshape(s, (1, actor.state_dim)))
@@ -237,7 +236,7 @@ def main(_):
             print('Continuous Action Space')
         except AttributeError:
             action_dim = env.action_space.n
-            action_bound = 2
+            action_bound = None
             discrete = True
             print('Discrete Action Space')
 
